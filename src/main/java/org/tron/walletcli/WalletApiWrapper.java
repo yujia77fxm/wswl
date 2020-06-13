@@ -303,6 +303,9 @@ public class WalletApiWrapper {
     }
     return WalletApi.generateAddress();
   }
+  public AddressPrKeyPairMessage generateAddressWithoutLogin() {
+    return WalletApi.generateAddress();
+  }
 
 
   public boolean createWitness(byte[] ownerAddress, String url)

@@ -1,42 +1,4 @@
-group 'Tron'
-version '1.0-SNAPSHOT'
 
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'com.google.protobuf'
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'application'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-
-sourceCompatibility = 1.8
-targetCompatibility = JavaVersion.VERSION_1_8
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-
-compileJava.options*.compilerArgs = [
-        "-Xlint:serial", "-Xlint:varargs", "-Xlint:classfile", "-Xlint:dep-ann",
-        "-Xlint:divzero", "-Xlint:empty", "-Xlint:finally", "-Xlint:overrides",
-        "-Xlint:path", "-Xlint:static", "-Xlint:try", "-Xlint:fallthrough",
-        "-Xlint:deprecation", "-Xlint:unchecked", "-Xlint:-options"
-]
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-sourceSets {
-    main {
-        proto {
-            srcDir 'src/main/protos'
-        }
-        java {
-            srcDir 'src/main/gen'
-            srcDir 'src/main/java'
-        }
-    }
-
-}
 buildscript {
     repositories {
         mavenLocal()
@@ -60,7 +22,61 @@ buildscript {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE")
     }
 }
+plugins {
+    id "com.arenagod.gradle.MybatisGenerator" version "1.4" //gradle提供的mybatis generator插件
+}
+group 'Tron'
+version '1.0-SNAPSHOT'
 
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'application'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+
+sourceCompatibility = 1.8
+targetCompatibility = JavaVersion.VERSION_1_8
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+compileJava.options*.compilerArgs = [
+        "-Xlint:serial", "-Xlint:varargs", "-Xlint:classfile", "-Xlint:dep-ann",
+        "-Xlint:divzero", "-Xlint:empty", "-Xlint:finally", "-Xlint:overrides",
+        "-Xlint:path", "-Xlint:static", "-Xlint:try", "-Xlint:fallthrough",
+        "-Xlint:deprecation", "-Xlint:unchecked", "-Xlint:-options"
+]
+mybatisGenerator {
+    verbose = true
+    configFile = 'src/main/resources/generatorConfig.xml'
+}
+
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url 'http://maven.aliyun.com/nexus/content/groups/public'
+    }
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir 'src/main/protos'
+        }
+        java {
+            srcDir 'src/main/gen'
+            srcDir 'src/main/java'
+        }
+        resources {
+            //可以将java目录下的所有非.java资源打包到classes下
+            srcDir 'src/main/java'
+        }
+    }
+
+}
 task wrapper(type: Wrapper) {
     gradleVersion = '3.3'
 }
@@ -96,7 +112,15 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    compile group: 'org.mybatis.generator', name: 'mybatis-generator-core', version: '1.3.3'
+//    compile 'mysql:mysql-connector-java:5.1.6'
+    compile group: 'com.alibaba', name: 'druid', version: '1.1.12'
+    compile("org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.0")
+    runtimeOnly 'mysql:mysql-connector-java'
+    implementation 'org.apache.tuweni:tuweni-bytes:1.0.0'
+    implementation 'org.apache.tuweni:tuweni-units:1.0.0'
 }
+
 
 protobuf {
     generatedFilesBaseDir = "$projectDir/src/"
@@ -128,9 +152,13 @@ protobuf {
 run {
     standardInput = System.in
     //mainClassName = 'org.tron.walletcli.Client'
-    mainClassName = 'org.tron.WalletBootApplication'
+    mainClassName = 'com.wswl.WalletBootApplication'
 }
-
+processResources {
+    from('src/main/java') {
+        include '**/*'
+    }
+}
 
 shadowJar {
     baseName = 'wallet-cli'
