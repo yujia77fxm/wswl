@@ -1,6 +1,7 @@
 package com.wswl.service;
 
 import com.wswl.entity.AddressEntity;
+import com.wswl.entity.TransferEntity;
 
 public interface AccountService {
 

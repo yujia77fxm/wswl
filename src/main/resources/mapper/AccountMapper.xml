@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wswl.dao.AccountMapper">
-    <resultMap id="AddressEntity" type="AddressEntity">
+    <resultMap id="AddressEntity" type="com.wswl.entity.AddressEntity">
         <id property="id" column="id"/>
         <result property="base58Check" column="base58_check"/>
-        <result property="HexAddress" column="hex_address"/>
+        <result property="hexAddress" column="hex_address"/>
         <result property="publicKey" column="public_key"/>
         <result property="privateKey" column="private_key"/>
         <result property="createTime" column="create_time"/>
@@ -14,19 +14,19 @@
     </insert>
     <insert id="insertAddress">
         insert into account(base58_check,hex_address,public_key,private_key) values
-                            (base58Check,
-                            HexAddress,
-                            publicKey,
-                            privateKey);
+                            (#{base58Check},
+                            #{hexAddress},
+                            #{publicKey},
+                            #{privateKey});
     </insert>
     <insert id="tranferAsset">
-        insert into account(base58_check,hex_address,public_key,private_key) values
-                            (base58Check,
-                            HexAddress,
-                            publicKey,
-                            privateKey);
+        insert into tranction(base58_check,from_address,to_address,amount,is_success) values
+                            ("base58Check",
+                            #{fromAddress},
+                            #{toAddress},
+                            #{isSuccess});
     </insert>
     <select id="getAddressEntity" resultMap="AddressEntity" parameterType="String" >
-        select base58_check,hex_address,private_key from account WHERE hex_address = fromAddress;
+        select base58_check,hex_address,private_key from account WHERE base58_check = #{fromAddress};
     </select>
 </mapper>

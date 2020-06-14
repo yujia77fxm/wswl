@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wswl.dao.TransferMapper">
+    <resultMap id="TransferEntity" type="com.wswl.entity.TransferEntity">
+        <id property="id" column="id"/>
+        <result property="base58Check" column="base58_check"/>
+        <result property="fromAddress" column="from_address"/>
+        <result property="toAddress" column="to_address"/>
+        <result property="amount" column="amount"/>
+        <result property="tranctionId" column="tranction_id"/>
+        <result property="tokenId" column="tokenid"/>
+        <result property="isSuccess" column="is_success"/>
+        <result property="isConfirmed" column="is_confirmed"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="insertTranfer" parameterType="com.wswl.entity.TransferEntity" >
+        insert into tranction (base58_check,from_address,to_address,amount,tranction_id,tokenid,is_success) values
+                            (   "base58Check",
+                                #{fromAddress},
+                                #{toAddress},
+                                #{amount},
+                                #{tranctionId}
+                                #{tokenId}
+                                #{isSuccess});
+    </insert>
+
+    <select id="getTransferEntity" resultMap="TransferEntity" parameterType="com.wswl.entity.TransferEntity" >
+        select *from tranction
+                            WHERE from_address = #{fromAddress}
+                            and to_address = #{toAddress};
+    </select>
+</mapper>

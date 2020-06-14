@@ -775,6 +775,25 @@ public class WalletApi {
     }
   }
 
+  /**
+   * zhy 交易trc10资产
+   * @param owner
+   * @param to
+   * @param assertName
+   * @param amount
+   * @return
+   * @throws CipherException
+   * @throws IOException
+   * @throws CancelException
+   */
+  public static Transaction getTransferAssetTranction(byte[] owner, byte[] to, byte[] assertName, long amount)
+          throws CipherException, IOException, CancelException {
+
+    TransferAssetContract contract = createTransferAssetContract(to, assertName, owner, amount);
+    //if (rpcVersion == 2) {
+    TransactionExtention transactionExtention = rpcCli.createTransferAssetTransaction2(contract);
+    return transactionExtention.getTransaction();
+  }
   public boolean participateAssetIssue(byte[] owner, byte[] to, byte[] assertName, long amount)
       throws CipherException, IOException, CancelException {
     if (owner == null) {
