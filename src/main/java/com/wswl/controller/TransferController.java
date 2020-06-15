@@ -44,7 +44,6 @@ public class TransferController {
             privateKey = entity.getPrivateKey();
         }
         try {
-            //result =  WalletApiUtil.transferAsset(fromAddress,toAddress,privateKey,amount);
             result =  WalletApiUtil.transferAssetTrc10(fromAddress,toAddress,tokenId,amount,privateKey);
         }catch ( InvalidProtocolBufferException e){
         }catch (CancelException | CipherException | IOException e){
@@ -53,6 +52,7 @@ public class TransferController {
         if(result != null && result.isResult()) {
             TransferEntity transferEntity = new TransferEntity(fromAddress,toAddress,amount,result.isResult());
             transferEntity.setTranctionId(result.getTxid());
+            transferEntity.setTokenId(tokenId);
             transferService.insertTransfer(transferEntity);
             return ResponseEntity.status(HttpStatus.OK).body(result.getTxid());
         }else {

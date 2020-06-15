@@ -20,8 +20,8 @@
                                 #{fromAddress},
                                 #{toAddress},
                                 #{amount},
-                                #{tranctionId}
-                                #{tokenId}
+                                #{tranctionId},
+                                #{tokenId},
                                 #{isSuccess});
     </insert>
 
