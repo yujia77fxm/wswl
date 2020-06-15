@@ -40,11 +40,7 @@ public class TransferController {
         TransferResult result = null;
         String privateKey = "";
 
-        if(fromAddress.equalsIgnoreCase("zhy")){ //for transfer asset test
-            privateKey  = "9499fe76b42b9ef22579873a06ec8f6882cb3ef4a643a22f64a4df57964c528f";
-            fromAddress = "TCzvRmtUww6dykCmxeFC6LXbdJvfZ7ikGb";
-            amount = 1L;
-        } else if(entity != null){
+        if(entity != null){
             privateKey = entity.getPrivateKey();
         }
         try {
