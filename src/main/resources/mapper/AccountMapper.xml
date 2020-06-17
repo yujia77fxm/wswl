@@ -7,17 +7,19 @@
         <result property="hexAddress" column="hex_address"/>
         <result property="publicKey" column="public_key"/>
         <result property="privateKey" column="private_key"/>
+        <result property="username" column="username"/>
         <result property="createTime" column="create_time"/>
     </resultMap>
 
     <insert id="insert">
     </insert>
     <insert id="insertAddress">
-        insert into account(base58_check,hex_address,public_key,private_key) values
+        insert into account(base58_check,hex_address,public_key,private_key,username) values
                             (#{base58Check},
                             #{hexAddress},
                             #{publicKey},
-                            #{privateKey});
+                            #{privateKey},
+                            #{username});
     </insert>
     <insert id="tranferAsset">
         insert into tranction(base58_check,from_address,to_address,amount,is_success) values
@@ -27,6 +29,6 @@
                             #{isSuccess});
     </insert>
     <select id="getAddressEntity" resultMap="AddressEntity" parameterType="String" >
-        select base58_check,hex_address,private_key from account WHERE base58_check = #{fromAddress};
+        select base58_check,hex_address,private_key,username from account WHERE base58_check = #{fromAddress};
     </select>
 </mapper>

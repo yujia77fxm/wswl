@@ -15,4 +15,5 @@ public class AddressEntity implements Serializable {
     private String publicKey;
     private String privateKey;
     private Date createTime;
+    private String username;
 }

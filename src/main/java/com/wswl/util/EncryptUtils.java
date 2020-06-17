@@ -89,7 +89,7 @@ public class EncryptUtils {
 	 * @throws Exception
 	 */
 
-	public static String getSignData(Map<String, Object> params,String signKey) {
+	public static String getSignData(Map<String, Object> params) {
 		StringBuffer content = new StringBuffer();
 
 		// 按照key做排序
@@ -103,14 +103,13 @@ public class EncryptUtils {
 			}
 			String value =params.get(key).toString();
 			if (value != null) {
-				content.append(key + value).append("|");
-			} else {
-				//content.append(key);
+				content.append(key + "=" + value).append("&");
 			}
 		}
-        content.append(signKey);
+		String signKey = "1234";//盐值
+        content.append("key="+signKey);
 
-		return MD5Util.md5(content.toString()).toLowerCase();
+		return MD5Util.md5(content.toString());
 	}
 
 }

@@ -1,19 +1,17 @@
 package com.wswl.controller;
 
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.wswl.entity.AddressEntity;
-import com.wswl.entity.TransferEntity;
+import com.wswl.mode.pojo.CreateAddressBean;
 import com.wswl.service.AccountService;
-import com.wswl.service.TransferService;
+import com.wswl.util.EncryptUtils;
 import com.wswl.util.WalletApiUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.tron.core.exception.CancelException;
-import org.tron.walletserver.WalletApi;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 
 
 /**
@@ -28,19 +26,21 @@ public class AccountController {
     private AccountService accoutService;
 
 
-    @GetMapping("/getAdress")
-    public String getAdress() {
-        String[] para = {"TWbcHNCYzqAGbrQteKnseKJdxfzBHyTfuh","1000099","1000"};
+    @PostMapping("/createAdress")
+    public ResponseEntity createAdress(@RequestBody CreateAddressBean createAddressBean) {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("plat",createAddressBean.getPlat());
+        map.put("usn",createAddressBean.getUsn());
 
-        return para.toString();
-        //return ResponseEntity.status(HttpStatus.FOUND).body(accoutService.getAdress());
-    }
-    @GetMapping("/createAdress")
-    public String createAdress() {
+        String sign = EncryptUtils.getSignData(map);
+        if(!sign.equalsIgnoreCase(createAddressBean.getSign())){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("bad sign");
+        }
+
         AddressEntity entity =  WalletApiUtil.generateLocalAddress();
+        entity.setUsername(createAddressBean.getUsn());
         accoutService.insertAddress(entity);
-        return entity.getBase58Check();
-        //return ResponseEntity.status(HttpStatus.FOUND).body(accoutService.getAdress());
+        return ResponseEntity.status(HttpStatus.OK).body(entity.getBase58Check());
     }
 
 }
