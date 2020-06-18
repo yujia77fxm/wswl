@@ -1,7 +1,11 @@
 package com.wswl.controller;
 
 
+import com.alibaba.fastjson.JSON;
 import com.wswl.entity.AddressEntity;
+import com.wswl.entity.ApiResp;
+import com.wswl.entity.BaseEnumError;
+import com.wswl.entity.WSResponseEntity;
 import com.wswl.mode.pojo.CreateAddressBean;
 import com.wswl.service.AccountService;
 import com.wswl.util.EncryptUtils;
@@ -27,20 +31,20 @@ public class AccountController {
 
 
     @PostMapping("/createAdress")
-    public ResponseEntity createAdress(@RequestBody CreateAddressBean createAddressBean) {
+    public ApiResp createAdress(@RequestBody CreateAddressBean createAddressBean) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("plat",createAddressBean.getPlat());
         map.put("usn",createAddressBean.getUsn());
 
         String sign = EncryptUtils.getSignData(map);
         if(!sign.equalsIgnoreCase(createAddressBean.getSign())){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("bad sign");
+            return ApiResp.retFail(BaseEnumError.FAIL);//("bad sign");
         }
 
         AddressEntity entity =  WalletApiUtil.generateLocalAddress();
         entity.setUsername(createAddressBean.getUsn());
         accoutService.insertAddress(entity);
-        return ResponseEntity.status(HttpStatus.OK).body(entity.getBase58Check());
+        return ApiResp.retOK(entity.getBase58Check());
     }
 
 }

@@ -1,24 +1,24 @@
 package com.wswl.controller;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.wswl.entity.AddressEntity;
-import com.wswl.entity.TransferEntity;
-import com.wswl.entity.TransferResult;
+import com.wswl.entity.*;
+import com.wswl.mode.pojo.TransferBean;
 import com.wswl.service.AccountService;
 import com.wswl.service.TransferService;
+import com.wswl.util.EncryptUtils;
 import com.wswl.util.WalletApiUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.tron.core.exception.CancelException;
 import org.tron.core.exception.CipherException;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+
+import static com.wswl.entity.BaseEnumError.WALLETFAIL;
 
 @RestController
 @RequestMapping("/transfer")
@@ -29,14 +29,21 @@ public class TransferController {
     @Autowired
     private TransferService transferService;
 
-    @GetMapping("/transferAsset")
-    public ResponseEntity transferAsset(@RequestParam(value="fromAddress", required=true) String fromAddress,
-                                         @RequestParam(value="toAddress", required=true) String toAddress,
-                                         @RequestParam(value="tokenId", required=true) String tokenId,
-                                         @RequestParam(value="amount", required=true) long amount
-    ) {
+    @PostMapping("/transferAsset")
+    public ApiResp transferAsset(@RequestBody TransferBean transferBean) {
 
-        AddressEntity entity =  accoutService.getAdressEntity(fromAddress);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("fromAddress",transferBean.getFromAddress());
+        map.put("toAddress",transferBean.getToAddress());
+        map.put("tokenId",transferBean.getTokenId());
+        map.put("amount",transferBean.getAmount());
+
+        String sign = EncryptUtils.getSignData(map);
+        if(!sign.equalsIgnoreCase(transferBean.getSign())){
+             return ApiResp.retFail(BaseEnumError.FAIL);
+        }
+
+        AddressEntity entity =  accoutService.getAdressEntity(transferBean.getFromAddress());
         TransferResult result = null;
         String privateKey = "";
 
@@ -44,31 +51,41 @@ public class TransferController {
             privateKey = entity.getPrivateKey();
         }
         try {
-            result =  WalletApiUtil.transferAssetTrc10(fromAddress,toAddress,tokenId,amount,privateKey);
+            result =  WalletApiUtil.transferAssetTrc10(transferBean.getFromAddress(),
+                                                        transferBean.getToAddress(),
+                                                        transferBean.getTokenId(),
+                                                        transferBean.getAmount(),
+                                                        privateKey);
         }catch ( InvalidProtocolBufferException e){
+            return ApiResp.retFail(WALLETFAIL);//("bad sign");
         }catch (CancelException | CipherException | IOException e){
+            return ApiResp.retFail(WALLETFAIL);//("bad sign");
         }
 
         if(result != null && result.isResult()) {
-            TransferEntity transferEntity = new TransferEntity(fromAddress,toAddress,amount,result.isResult());
+            TransferEntity transferEntity = new TransferEntity(transferBean.getFromAddress(),
+                                                                transferBean.getToAddress(),
+                                                                transferBean.getAmount(),
+                                                                result.isResult());
             transferEntity.setTranctionId(result.getTxid());
-            transferEntity.setTokenId(tokenId);
+            transferEntity.setTokenId(transferBean.getTokenId());
             transferService.insertTransfer(transferEntity);
-            return ResponseEntity.status(HttpStatus.OK).body(result.getTxid());
+            return ApiResp.retOK(result.getTxid());
         }else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("transfer failed");
+            return ApiResp.retFail(BaseEnumError.FAIL);//("bad sign");
+
         }
         //return result;
     }
     @GetMapping("/getTransfer")
-    public ResponseEntity getTransferEntity(@RequestParam(value="fromAddress", required=true) String fromAddress,
+    public ApiResp getTransferEntity(@RequestParam(value="fromAddress", required=true) String fromAddress,
                                             @RequestParam(value="toAddress", required=true) String toAddress
                                             ){
 
         TransferEntity transferEntity = new TransferEntity(fromAddress,toAddress,0L,false);
         List<TransferEntity> list = transferService.getTransferEntity(transferEntity);
 
-        return ResponseEntity.status(HttpStatus.OK).body(list);
+        return ApiResp.retOK(list);
     }
 
 
